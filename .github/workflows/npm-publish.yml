@@ -28,7 +28,7 @@ jobs:
         run: npm run check
 
       - name: Validate example config
-        run: node bin/everything-cli.js validate
+        run: node bin/evt.js validate
 
       - name: Publish
         run: npm publish --access public

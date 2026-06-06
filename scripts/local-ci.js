@@ -29,7 +29,7 @@ function cleanDist() {
 function main() {
   run("npm", ["test"]);
   run("npm", ["run", "check"]);
-  run("node", ["bin/everything-cli.js", "validate"]);
+  run("node", ["bin/evt.js", "validate"]);
   run("npm", ["run", "coverage:api"]);
   cleanDist();
   run("node", ["scripts/build-package.js"]);

@@ -28,17 +28,17 @@ function print(value, json = false) {
 function usage() {
   return [
     "Usage:",
-    "  everything-cli profile list [--config-root ./cli]",
-    "  everything-cli profile show <name>",
-    "  everything-cli api list",
-    "  everything-cli api show <id>",
-    "  everything-cli api scan [--missing] [--scan-config path/to/scanner.json]",
-    "  everything-cli api call <id> [--profile local] [--set k=v] [--body '{...}'] [--dry-run]",
-    "  everything-cli api test-all [--profile local] [--include-dangerous] [--only namespace]",
-    "  everything-cli validate",
-    "  everything-cli flow list",
-    "  everything-cli flow run <name> [--profile local] [--set k=v] [--dry-run]",
-    "  everything-cli cache show|clear|path"
+    "  evt profile list [--config-root ./cli]",
+    "  evt profile show <name>",
+    "  evt api list",
+    "  evt api show <id>",
+    "  evt api scan [--missing] [--scan-config path/to/scanner.json]",
+    "  evt api call <id> [--profile local] [--set k=v] [--body '{...}'] [--dry-run]",
+    "  evt api test-all [--profile local] [--include-dangerous] [--only namespace]",
+    "  evt validate",
+    "  evt flow list",
+    "  evt flow run <name> [--profile local] [--set k=v] [--dry-run]",
+    "  evt cache show|clear|path"
   ].join("\n");
 }
 

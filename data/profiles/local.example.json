@@ -12,7 +12,7 @@
   "headers": {
     "Accept": "application/json",
     "Content-Type": "application/json",
-    "X-Client": "everything-cli"
+    "X-Client": "evt-cli"
   },
   "inputs": {
     "email": "user@example.com",

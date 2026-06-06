@@ -8,7 +8,7 @@ function setConfigRoot(root) {
 }
 
 function configRoot() {
-  return path.resolve(process.env.EVERYTHING_CLI_ROOT || configuredRoot || cliRoot);
+  return path.resolve(process.env.EVT_CLI_ROOT || process.env.EVERYTHING_CLI_ROOT || configuredRoot || cliRoot);
 }
 
 function resolveCliPath(...parts) {

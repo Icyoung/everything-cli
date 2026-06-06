@@ -111,7 +111,7 @@ test("validates required schema values", () => {
 });
 
 test("builds multipart file upload requests", () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "everything-cli-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "evt-cli-"));
   const filePath = path.join(dir, "avatar.png");
   fs.writeFileSync(filePath, "fake image");
 

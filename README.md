@@ -1,6 +1,6 @@
-# everything-cli
+# evt-cli
 
-everything-cli 是一个通用 HTTP CLI，用 YAML 定义接口、用 YAML 定义 flow、用 profile 管理 base URL/header/token/cache。它适合把客户端接口整理成可执行、可测试、可打包的命令行工具。
+evt-cli 是一个通用 HTTP CLI，用 YAML 定义接口、用 YAML 定义 flow、用 profile 管理 base URL/header/token/cache。它适合把客户端接口整理成可执行、可测试、可打包的命令行工具。安装后使用 `evt` 命令。
 
 ## 核心原则
 
@@ -8,47 +8,47 @@ everything-cli 是一个通用 HTTP CLI，用 YAML 定义接口、用 YAML 定�
 - flow 只来自 `flows/*.yaml`。
 - 环境、base URL、headers、测试 fixtures 只来自 `profiles/*.json`。
 - 扫描器只用于覆盖率对比和生成缺失 YAML 骨架，不是运行时数据源。
-- 默认数据目录是当前 CLI 包内目录；也可以通过 `--config-root` 或 `EVERYTHING_CLI_ROOT` 指向项目自己的数据目录。
+- 默认数据目录是当前 CLI 包内目录；也可以通过 `--config-root` 或 `EVT_CLI_ROOT` 指向项目自己的数据目录。
 
 ## 快速开始
 
 安装：
 
 ```bash
-npm install -g everything-cli
+npm install -g evt-cli
 ```
 
 安装后直接运行自带 example 数据：
 
 ```bash
-everything-cli profile list
-everything-cli api list
-everything-cli validate
-everything-cli api call todo.list --profile local --dry-run
+evt profile list
+evt api list
+evt validate
+evt api call todo.list --profile local --dry-run
 ```
 
 仓库内开发时也可以直接运行：
 
 ```bash
-node bin/everything-cli.js profile list
-node bin/everything-cli.js api list
-node bin/everything-cli.js validate
-node bin/everything-cli.js api call todo.list --profile local --dry-run
+node bin/evt.js profile list
+node bin/evt.js api list
+node bin/evt.js validate
+node bin/evt.js api call todo.list --profile local --dry-run
 ```
 
 使用项目自己的数据目录：
 
 ```bash
-node bin/everything-cli.js validate --config-root /path/to/project/cli
-node bin/everything-cli.js api list --config-root /path/to/project/cli
-node bin/everything-cli.js flow run login --config-root /path/to/project/cli --profile dev
+evt validate --config-root /path/to/project/cli
+evt api list --config-root /path/to/project/cli
+evt flow run login --config-root /path/to/project/cli --profile dev
 ```
 
 也可以设置环境变量：
 
 ```bash
-export EVERYTHING_CLI_ROOT=/path/to/project/cli
-everything-cli validate
+export EVT_CLI_ROOT=/path/to/project/cli
+evt validate
 ```
 
 ## 数据目录
@@ -71,7 +71,7 @@ cli/
     scanner.example.json
 ```
 
-everything-cli 自带 `data/**/*.example.*`，用于开箱验证和复制参考。真实项目可以维护 `data/apis/*.yaml`、`data/flows/*.yaml`、`data/profiles/*.json` 和 `data/scanner.json`。
+evt-cli 自带 `data/**/*.example.*`，用于开箱验证和复制参考。真实项目可以维护 `data/apis/*.yaml`、`data/flows/*.yaml`、`data/profiles/*.json` 和 `data/scanner.json`。
 
 为了兼容已有项目，`--config-root` 下直接存在 `apis/`、`flows/`、`profiles/`、`scanner.config.json` 时也会被读取。
 
@@ -85,18 +85,18 @@ npm run ci:local
 
 - `npm test`
 - `npm run check`
-- `node bin/everything-cli.js validate`
+- `node bin/evt.js validate`
 - `npm run coverage:api`
 - `node scripts/build-package.js`
 
 产物：
 
-- `dist/everything-cli/`
-- `dist/everything-cli-<version>-<platform>-<arch>.tar.gz`
+- `dist/evt-cli/`
+- `dist/evt-cli-<version>-<platform>-<arch>.tar.gz`
 
 打包目录只包含：
 
-- `everything-cli`
+- `evt`
 - `data/`
 - `README.md`
 
@@ -107,7 +107,7 @@ npm run ci:local
 查看接口：
 
 ```bash
-everything-cli api show auth.login
+evt api show auth.login
 ```
 
 接口 YAML 示例：
@@ -148,7 +148,7 @@ endpoints:
 扫描源码候选 endpoint：
 
 ```bash
-everything-cli api scan --scan-config ./scanner.config.json
+evt api scan --scan-config ./scanner.config.json
 ```
 
 覆盖率检查：
@@ -201,11 +201,11 @@ npm run sync:api -- --config-root /path/to/project/cli
 ## 常用命令
 
 ```bash
-everything-cli profile list
-everything-cli api list
-everything-cli api call todo.list --dry-run
-everything-cli flow run login --profile local
-everything-cli cache show
-everything-cli cache clear
-everything-cli api test-all --profile local
+evt profile list
+evt api list
+evt api call todo.list --dry-run
+evt flow run login --profile local
+evt cache show
+evt cache clear
+evt api test-all --profile local
 ```

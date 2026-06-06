@@ -7,9 +7,9 @@ const { spawnSync } = require("node:child_process");
 const cliRoot = path.resolve(__dirname, "..");
 const packageJson = require(path.join(cliRoot, "package.json"));
 const distDir = path.join(cliRoot, "dist");
-const packageName = "everything-cli";
+const packageName = "evt-cli";
 const packageDir = path.join(distDir, packageName);
-const entryId = "bin/everything-cli.js";
+const entryId = "bin/evt.js";
 
 function toPosix(file) {
   return file.split(path.sep).join("/");
@@ -151,7 +151,7 @@ function cleanDist() {
 function main() {
   cleanDist();
 
-  const executablePath = path.join(packageDir, "everything-cli");
+  const executablePath = path.join(packageDir, "evt");
   fs.writeFileSync(executablePath, renderExecutable(collectModules(entryId)));
   fs.chmodSync(executablePath, 0o755);
 
@@ -164,7 +164,7 @@ function main() {
   console.log("\nLocal package artifacts:");
   console.log(`- dist/${packageName}/`);
   console.log(`- dist/${artifactName}`);
-  console.log("\nPackage contents are limited to everything-cli, data examples, and README.md.");
+  console.log("\nPackage contents are limited to evt, data examples, and README.md.");
   console.log("No npm publish or remote upload was performed.");
 }
 

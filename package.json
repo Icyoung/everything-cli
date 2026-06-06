@@ -1,5 +1,5 @@
 {
-  "name": "everything-cli",
+  "name": "evt-cli",
   "version": "0.1.0",
   "description": "A configurable HTTP CLI for YAML-defined API workflows.",
   "license": "MIT",
@@ -12,7 +12,7 @@
   },
   "homepage": "https://github.com/Icyoung/everything-cli#readme",
   "bin": {
-    "everything-cli": "./bin/everything-cli.js"
+    "evt": "./bin/evt.js"
   },
   "files": [
     "bin/",
@@ -23,7 +23,7 @@
   "scripts": {
     "ci:local": "node scripts/local-ci.js",
     "test": "node --test",
-    "check": "node --check bin/everything-cli.js && node --check src/index.js && node --check src/api/liveTester.js && node --check scripts/sync-api-coverage.js && node --check scripts/check-api-coverage.js && node --check scripts/local-ci.js && node --check scripts/build-package.js",
+    "check": "node --check bin/evt.js && node --check src/index.js && node --check src/api/liveTester.js && node --check scripts/sync-api-coverage.js && node --check scripts/check-api-coverage.js && node --check scripts/local-ci.js && node --check scripts/build-package.js",
     "package:local": "node scripts/build-package.js",
     "sync:api": "node scripts/sync-api-coverage.js",
     "coverage:api": "node scripts/check-api-coverage.js"

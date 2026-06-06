@@ -26,7 +26,7 @@ test("runs login flow in dry-run mode without prompt", async () => {
     registry: loadApiRegistry(),
     profile: loadProfile("local"),
     cache: {},
-    cachePath: "/tmp/everything-cli-test-cache.json",
+    cachePath: "/tmp/evt-cli-test-cache.json",
     set: {
       email: "user@example.com",
       password: "secret"
@@ -41,7 +41,7 @@ test("runs login flow in dry-run mode without prompt", async () => {
 });
 
 test("fails when required cache save value is missing", async () => {
-  const cachePath = "/tmp/everything-cli-required-cache-test.json";
+  const cachePath = "/tmp/evt-cli-required-cache-test.json";
   const originalFetch = global.fetch;
   global.fetch = async () => ({
     ok: true,
@@ -117,7 +117,7 @@ test("supports step expect and extract variables", async () => {
       registry: loadApiRegistry(),
       profile: loadProfile("local"),
       cache: {},
-      cachePath: "/tmp/everything-cli-extract-cache-test.json",
+      cachePath: "/tmp/evt-cli-extract-cache-test.json",
       set: {},
       dryRun: false,
       noInteractive: true
@@ -175,7 +175,7 @@ test("updates flow cache for later authenticated steps", async () => {
       registry: loadApiRegistry(),
       profile: loadProfile("local"),
       cache: {},
-      cachePath: "/tmp/everything-cli-flow-cache-test.json",
+      cachePath: "/tmp/evt-cli-flow-cache-test.json",
       set: {},
       dryRun: false,
       noInteractive: true
@@ -204,7 +204,7 @@ test("skips response expectations during dry-run", async () => {
     registry: loadApiRegistry(),
     profile: loadProfile("local"),
     cache: {},
-    cachePath: "/tmp/everything-cli-dry-run-expect-cache-test.json",
+    cachePath: "/tmp/evt-cli-dry-run-expect-cache-test.json",
     set: {},
     dryRun: true,
     noInteractive: true
