@@ -1,0 +1,26 @@
+name: login
+description: Login and save session token.
+
+inputs:
+  email:
+    prompt: Email
+    type: string
+    required: true
+  password:
+    prompt: Password
+    type: password
+    required: true
+
+steps:
+  - id: login
+    call: auth.login
+    body:
+      email: "{{inputs.email}}"
+      password: "{{inputs.password}}"
+
+save:
+  cache:
+    token: "{{steps.login.response.data.token}}"
+    user: "{{steps.login.response.data.user}}"
+  required:
+    - cache.token

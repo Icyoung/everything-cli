@@ -1,0 +1,40 @@
+{
+  "root": ".",
+  "targets": [
+    {
+      "language": "kotlin",
+      "paths": [
+        "shared/src/commonMain/kotlin"
+      ],
+      "include": [
+        "**/*Service.kt"
+      ]
+    },
+    {
+      "language": "swift",
+      "paths": [
+        "ios/App/Services"
+      ]
+    },
+    {
+      "language": "js",
+      "paths": [
+        "src/services"
+      ]
+    },
+    {
+      "language": "dart",
+      "paths": [
+        "lib/services"
+      ]
+    },
+    {
+      "language": "skill",
+      "name": "ast-scanner",
+      "command": "node",
+      "args": [
+        "tools/scan-endpoints.js"
+      ]
+    }
+  ]
+}

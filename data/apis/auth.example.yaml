@@ -1,0 +1,44 @@
+namespace: auth
+
+endpoints:
+  login:
+    method: "POST"
+    path: "/api/login"
+    auth: false
+    bodyType: "json"
+    schema:
+      body:
+        email:
+          type: "string"
+          required: true
+          example: "user@example.com"
+        password:
+          type: "string"
+          required: true
+          example: "Password123."
+    response:
+      envelope: "Resp"
+      data:
+        type: "object"
+        model: "LoginData"
+        fields:
+          token: "string"
+          user:
+            type: "object"
+            model: "User"
+            fields:
+              id: "string"
+              email: "string"
+
+  logout:
+    method: "POST"
+    path: "/api/logout"
+    auth: true
+    dangerous: true
+    bodyType: "json"
+    schema: {}
+    response:
+      envelope: "Resp"
+      data:
+        type: "unit"
+        model: "Unit"

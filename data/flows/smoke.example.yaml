@@ -1,0 +1,9 @@
+name: smoke
+description: Example smoke flow.
+
+steps:
+  - id: todos
+    call: todo.list
+    query:
+      page: 1
+      pageSize: 20

@@ -1,0 +1,29 @@
+{
+  "name": "local",
+  "env": "example",
+  "platform": "CLI",
+  "baseUrls": {
+    "default": "https://api.example.com"
+  },
+  "auth": {
+    "header": "Authorization",
+    "scheme": "bearer"
+  },
+  "headers": {
+    "Accept": "application/json",
+    "Content-Type": "application/json",
+    "X-Client": "everything-cli"
+  },
+  "inputs": {
+    "email": "user@example.com",
+    "password": "Password123."
+  },
+  "fixtures": {
+    "defaults": {
+      "page": 1,
+      "pageSize": 20,
+      "title": "Example todo",
+      "done": false
+    }
+  }
+}

@@ -1,0 +1,52 @@
+namespace: todo
+
+endpoints:
+  list:
+    method: "GET"
+    path: "/api/todos"
+    auth: true
+    schema:
+      query:
+        page:
+          type: "integer"
+          default: 1
+        pageSize:
+          type: "integer"
+          default: 20
+    response:
+      envelope: "Resp"
+      data:
+        type: "object"
+        model: "TodoList"
+        fields:
+          total: "integer"
+          items:
+            type: "array"
+            items:
+              type: "object"
+              model: "Todo"
+
+  create:
+    method: "POST"
+    path: "/api/todos"
+    auth: true
+    dangerous: true
+    bodyType: "json"
+    schema:
+      body:
+        title:
+          type: "string"
+          required: true
+          example: "Example todo"
+        done:
+          type: "boolean"
+          default: false
+    response:
+      envelope: "Resp"
+      data:
+        type: "object"
+        model: "Todo"
+        fields:
+          id: "string"
+          title: "string"
+          done: "boolean"
