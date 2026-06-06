@@ -1,10 +1,25 @@
 {
   "name": "everything-cli",
   "version": "0.1.0",
-  "private": true,
+  "description": "A configurable HTTP CLI for YAML-defined API workflows.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Icyoung/everything-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Icyoung/everything-cli/issues"
+  },
+  "homepage": "https://github.com/Icyoung/everything-cli#readme",
   "bin": {
     "everything-cli": "./bin/everything-cli.js"
   },
+  "files": [
+    "bin/",
+    "src/",
+    "data/",
+    "README.md"
+  ],
   "scripts": {
     "ci:local": "node scripts/local-ci.js",
     "test": "node --test",

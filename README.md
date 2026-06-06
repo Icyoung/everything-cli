@@ -1,6 +1,6 @@
 # everything-cli
 
-everything-cli 是一个通用内部 HTTP CLI，用 YAML 定义接口、用 YAML 定义 flow、用 profile 管理 base URL/header/token/cache。它适合把客户端接口整理成可执行、可测试、可打包的本地工具。
+everything-cli 是一个通用 HTTP CLI，用 YAML 定义接口、用 YAML 定义 flow、用 profile 管理 base URL/header/token/cache。它适合把客户端接口整理成可执行、可测试、可打包的命令行工具。
 
 ## 核心原则
 
@@ -12,7 +12,22 @@ everything-cli 是一个通用内部 HTTP CLI，用 YAML 定义接口、用 YAML
 
 ## 快速开始
 
-仓库内直接运行 example 数据：
+安装：
+
+```bash
+npm install -g everything-cli
+```
+
+安装后直接运行自带 example 数据：
+
+```bash
+everything-cli profile list
+everything-cli api list
+everything-cli validate
+everything-cli api call todo.list --profile local --dry-run
+```
+
+仓库内开发时也可以直接运行：
 
 ```bash
 node bin/everything-cli.js profile list
