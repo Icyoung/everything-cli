@@ -30,11 +30,8 @@
     },
     {
       "language": "skill",
-      "name": "ast-scanner",
-      "command": "node",
-      "args": [
-        "tools/scan-endpoints.js"
-      ]
+      "name": "evt-api-scanner",
+      "skill": "evt-api-scanner"
     }
   ]
 }

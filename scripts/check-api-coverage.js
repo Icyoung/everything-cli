@@ -4,8 +4,8 @@ const { loadApiRegistry } = require("../src/config/loaders");
 const { compareScanToRegistry, parseCliScanOptions, scanServices } = require("../src/config/serviceScanner");
 const { setConfigRoot } = require("../src/util/paths");
 
-function main() {
-  const scanOptions = parseCliScanOptions(process.argv.slice(2));
+function runApiCoverage(argv = process.argv.slice(2), options = {}) {
+  const scanOptions = parseCliScanOptions(argv);
   setConfigRoot(scanOptions.configRoot);
   const registry = loadApiRegistry();
   const scanned = scanServices(scanOptions);
@@ -28,7 +28,14 @@ function main() {
   };
 
   console.log(JSON.stringify(payload, null, 2));
-  if (failed) process.exit(1);
+  if (failed && options.exitOnFailure) process.exit(1);
+  return { failed, payload };
 }
 
-main();
+if (require.main === module) {
+  runApiCoverage(process.argv.slice(2), { exitOnFailure: true });
+}
+
+module.exports = {
+  runApiCoverage
+};

@@ -97,6 +97,7 @@ function normalizeConfig(config, baseDir = repoRoot) {
   return {
     ...config,
     root,
+    apiDir: config.apiDir ? path.resolve(baseDir, config.apiDir) : undefined,
     targets: (config.targets || []).map((target) => ({ ...target }))
   };
 }
@@ -375,37 +376,85 @@ function normalizeSkillEndpoint(rawEndpoint, target, config) {
 }
 
 function scanSkillTarget(config, target) {
-  if (!target.command) {
+  const resolvedTarget = resolveSkillTarget(target);
+  if (!resolvedTarget.command) {
     throw new Error("Skill scanner target must define command");
   }
-  const cwd = target.cwd ? path.resolve(config.root, target.cwd) : config.root;
-  const result = spawnSync(target.command, (target.args || []).map(String), {
+  const cwd = resolvedTarget.cwd ? path.resolve(config.root, resolvedTarget.cwd) : config.root;
+  const result = spawnSync(resolvedTarget.command, (resolvedTarget.args || []).map(String), {
     cwd,
     encoding: "utf8",
     shell: false,
     env: {
       ...process.env,
-      ...(target.env || {})
+      EVT_SCAN_ROOT: config.root,
+      ...(resolvedTarget.env || {})
     },
-    maxBuffer: target.maxBuffer || 10 * 1024 * 1024
+    maxBuffer: resolvedTarget.maxBuffer || 10 * 1024 * 1024
   });
 
   if (result.error) {
-    throw new Error(`Skill scanner ${target.name || target.command} failed: ${result.error.message}`);
+    throw new Error(`Skill scanner ${resolvedTarget.name || resolvedTarget.command} failed: ${result.error.message}`);
   }
   if (result.status !== 0) {
     const stderr = String(result.stderr || "").trim();
-    throw new Error(`Skill scanner ${target.name || target.command} exited with ${result.status}${stderr ? `: ${stderr}` : ""}`);
+    throw new Error(`Skill scanner ${resolvedTarget.name || resolvedTarget.command} exited with ${result.status}${stderr ? `: ${stderr}` : ""}`);
   }
 
-  return parseSkillOutput(result.stdout, target)
-    .map((endpoint) => normalizeSkillEndpoint(endpoint, target, config));
+  return parseSkillOutput(result.stdout, resolvedTarget)
+    .map((endpoint) => normalizeSkillEndpoint(endpoint, resolvedTarget, config));
+}
+
+function resolveSkillTarget(target) {
+  if (!target.skill) return target;
+  if (target.skill !== "evt-api-scanner") return target;
+  return {
+    ...target,
+    name: target.name || "evt-api-scanner",
+    command: process.execPath,
+    args: target.args || [
+      path.join(cliRoot, "skills", "evt-api-scanner", "scripts", "scan.js"),
+      "--root",
+      "."
+    ]
+  };
+}
+
+function splitTargets(targets) {
+  const skillTargets = [];
+  const fallbackTargets = [];
+  for (const target of targets || []) {
+    if (isSkillTarget(target)) {
+      skillTargets.push(target);
+    } else {
+      fallbackTargets.push(target);
+    }
+  }
+  return { skillTargets, fallbackTargets };
+}
+
+function scanTargets(config, targets) {
+  return targets.flatMap((target) => scanTarget(config, target));
 }
 
 function scanServices(options = {}) {
   const config = loadScanConfig(options);
   if (!config.targets || config.targets.length === 0) return [];
-  return config.targets.flatMap((target) => scanTarget(config, target));
+  if (options.preferFallback) {
+    return scanTargets(config, config.targets.filter((target) => !isSkillTarget(target)));
+  }
+
+  const { skillTargets, fallbackTargets } = splitTargets(config.targets);
+  if (skillTargets.length === 0) {
+    return scanTargets(config, fallbackTargets);
+  }
+  try {
+    const skillEndpoints = scanTargets(config, skillTargets);
+    if (skillEndpoints.length > 0 || fallbackTargets.length === 0) return skillEndpoints;
+  } catch (error) {
+    if (fallbackTargets.length === 0 || options.strictSkill) throw error;
+  }
+  return scanTargets(config, fallbackTargets);
 }
 
 function compareScanToRegistry(scanned, registry) {
@@ -422,5 +471,6 @@ module.exports = {
   loadScanConfig,
   defaultScanConfig,
   parseCliScanOptions,
+  resolveSkillTarget,
   repoRoot
 };

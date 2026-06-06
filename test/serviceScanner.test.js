@@ -131,3 +131,66 @@ test("scans endpoints from an external skill command", () => {
     }
   ]);
 });
+
+test("uses bundled skill scanner target", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "evt-bundled-skill-scan-"));
+  writeFile(root, "src/AuthService.kt", `
+    class AuthService(val http: Http) {
+      suspend fun login(): Resp<Unit> {
+        return http.post("/api/login")
+      }
+    }
+  `);
+
+  const endpoints = scanServices({
+    config: {
+      root,
+      targets: [
+        {
+          language: "skill",
+          name: "evt-api-scanner",
+          skill: "evt-api-scanner"
+        }
+      ]
+    }
+  });
+
+  assert.deepEqual(endpoints.map((endpoint) => [endpoint.id, endpoint.method, endpoint.path]), [
+    ["auth.login", "POST", "/api/login"]
+  ]);
+});
+
+test("falls back to regex targets when skill scanner fails", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "evt-skill-fallback-"));
+  writeFile(root, "src/ITradeService.kt", `
+    class TradeService(val http: Http) {
+      suspend fun listTrades(): Resp<Unit> {
+        return http.get("/api/trades")
+      }
+    }
+  `);
+
+  const endpoints = scanServices({
+    config: {
+      root,
+      targets: [
+        {
+          language: "skill",
+          name: "broken-scanner",
+          command: process.execPath,
+          args: ["missing-scanner.js"]
+        },
+        {
+          language: "kotlin",
+          paths: ["src"],
+          namespaceStripPrefixes: ["I"],
+          namespaceStripSuffixes: ["Service"]
+        }
+      ]
+    }
+  });
+
+  assert.deepEqual(endpoints.map((endpoint) => [endpoint.id, endpoint.method, endpoint.path]), [
+    ["trade.listTrades", "GET", "/api/trades"]
+  ]);
+});

@@ -9,7 +9,8 @@ evt-cli is a general-purpose HTTP CLI for running YAML-defined APIs and workflow
 - Runtime endpoints come only from `apis/*.yaml`.
 - Flows come only from `flows/*.yaml`.
 - Environments, base URLs, headers, and test fixtures come only from `profiles/*.json`.
-- The scanner is only for coverage comparison and generating missing YAML skeletons. It is not a runtime data source.
+- Endpoint definitions are persisted as YAML. Scanner JSON is only an internal machine-readable handoff.
+- The bundled skill scanner is preferred for discovery and YAML generation. The built-in regex scanner remains as a fallback for users without an agent or skill workflow.
 - The default data directory is bundled with the CLI package. You can also point to your own project data directory with `--config-root` or `EVT_CLI_ROOT`.
 
 ## Quick Start
@@ -83,6 +84,9 @@ For compatibility with existing projects, evt also reads `apis/`, `flows/`, `pro
 npm run ci:local
 ```
 
+The npm package includes source code, scripts, tests, data examples, and skills
+so users can run local checks and build the standalone local binary package.
+
 This runs:
 
 - `npm test`
@@ -100,6 +104,7 @@ The local package directory contains only:
 
 - `evt`
 - `data/`
+- `skills/`
 - `README.md`
 - `README.zh-CN.md`
 
@@ -146,7 +151,35 @@ Each endpoint should include:
 - `response`
 - `dangerous: true` when the endpoint is destructive or sensitive
 
-## Scan And Coverage
+## Skill Scan, Sync, And Coverage
+
+evt-cli includes `skills/evt-api-scanner/SKILL.md`. Agents can use this skill to
+discover source directories, write scanner config, generate YAML endpoint
+definitions, and audit coverage.
+
+Endpoint definitions are written to YAML under `data/apis/*.yaml`. The scanner
+may use JSON internally, but JSON is not the endpoint definition format.
+
+Discover API source paths and write `data/scanner.json`:
+
+```bash
+evt api discover --config-root ./cli
+```
+
+Generate or update YAML endpoint definitions:
+
+```bash
+evt api sync --config-root ./cli
+```
+
+Check YAML coverage:
+
+```bash
+evt api coverage --config-root ./cli
+```
+
+The built-in regex scanner is still available as a fallback. It is less complete
+than the skill-guided workflow, but it works without an agent.
 
 Scan source code for candidate endpoints:
 
@@ -166,7 +199,8 @@ Generate missing YAML skeletons:
 npm run sync:api -- --config-root /path/to/project/cli
 ```
 
-The scanner supports `kotlin`, `swift`, `js`, and `dart`. It also supports external skill or AST scanner commands:
+The scanner supports `kotlin`, `swift`, `js`, and `dart`. It also supports the
+bundled skill scanner and external command scanners:
 
 ```json
 {
@@ -179,15 +213,16 @@ The scanner supports `kotlin`, `swift`, `js`, and `dart`. It also supports exter
     },
     {
       "language": "skill",
-      "name": "ast-scanner",
-      "command": "node",
-      "args": ["tools/scan-endpoints.js"]
+      "name": "evt-api-scanner",
+      "skill": "evt-api-scanner"
     }
   ]
 }
 ```
 
-An external scanner can output a JSON array or `{ "endpoints": [] }`. Each endpoint should include at least:
+An external scanner can output a JSON array or `{ "endpoints": [] }` as an
+internal scan result. `evt api sync` converts that scan result into YAML. Each
+intermediate endpoint should include at least:
 
 ```json
 {
@@ -206,6 +241,9 @@ This JSON is used only for scanning, coverage, and sync. Runtime execution still
 ```bash
 evt profile list
 evt api list
+evt api discover --config-root ./cli
+evt api sync --config-root ./cli
+evt api coverage --config-root ./cli
 evt api call todo.list --dry-run
 evt flow run login --profile local
 evt cache show

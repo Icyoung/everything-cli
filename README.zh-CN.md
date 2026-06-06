@@ -9,7 +9,8 @@ evt-cli 是一个通用 HTTP CLI，用 YAML 定义接口、用 YAML 定义 flow�
 - 运行时端点只来自 `apis/*.yaml`。
 - flow 只来自 `flows/*.yaml`。
 - 环境、base URL、headers、测试 fixtures 只来自 `profiles/*.json`。
-- 扫描器只用于覆盖率对比和生成缺失 YAML 骨架，不是运行时数据源。
+- endpoint 定义持久化格式始终是 YAML。scanner JSON 只作为内部机器中间结果。
+- 内置 skill scanner 优先用于发现、生成 YAML 和覆盖率审计。现有正则 scanner 保留给没有 agent 或 skill workflow 的用户兜底。
 - 默认数据目录是当前 CLI 包内目录；也可以通过 `--config-root` 或 `EVT_CLI_ROOT` 指向项目自己的数据目录。
 
 ## 快速开始
@@ -83,6 +84,8 @@ evt-cli 自带 `data/**/*.example.*`，用于开箱验证和复制参考。真�
 npm run ci:local
 ```
 
+npm 包会包含源码、脚本、测试、示例数据和 skills，用户可以自行运行本地校验并构建独立本地二进制包。
+
 执行内容：
 
 - `npm test`
@@ -100,6 +103,7 @@ npm run ci:local
 
 - `evt`
 - `data/`
+- `skills/`
 - `README.md`
 - `README.zh-CN.md`
 
@@ -146,7 +150,34 @@ endpoints:
 - `response`
 - 必要时标记 `dangerous: true`
 
-## 扫描和覆盖率
+## Skill 扫描、同步和覆盖率
+
+evt-cli 内置 `skills/evt-api-scanner/SKILL.md`。agent 可以使用这个 skill
+发现源码目录、写入 scanner 配置、生成 YAML endpoint 定义，并做覆盖率审计。
+
+endpoint 定义会写到 `data/apis/*.yaml`。scanner 可以在内部使用 JSON，但 JSON
+不是 endpoint 的最终定义格式。
+
+发现 API 源码路径并写入 `data/scanner.json`：
+
+```bash
+evt api discover --config-root ./cli
+```
+
+生成或更新 YAML endpoint 定义：
+
+```bash
+evt api sync --config-root ./cli
+```
+
+检查 YAML 覆盖率：
+
+```bash
+evt api coverage --config-root ./cli
+```
+
+内置正则 scanner 仍然保留为兜底方案。它不如 skill workflow 完整，但不依赖
+agent，也能让没有 agent 的用户勉强使用。
 
 扫描源码候选 endpoint：
 
@@ -166,7 +197,7 @@ npm run coverage:api -- --config-root /path/to/project/cli
 npm run sync:api -- --config-root /path/to/project/cli
 ```
 
-扫描器支持 `kotlin`、`swift`、`js`、`dart`，也支持外部 skill/AST 扫描命令：
+扫描器支持 `kotlin`、`swift`、`js`、`dart`，也支持内置 skill scanner 和外部命令 scanner：
 
 ```json
 {
@@ -179,15 +210,15 @@ npm run sync:api -- --config-root /path/to/project/cli
     },
     {
       "language": "skill",
-      "name": "ast-scanner",
-      "command": "node",
-      "args": ["tools/scan-endpoints.js"]
+      "name": "evt-api-scanner",
+      "skill": "evt-api-scanner"
     }
   ]
 }
 ```
 
-外部 scanner 输出 JSON 数组，或 `{ "endpoints": [] }`。每个 endpoint 至少包含：
+外部 scanner 可以输出 JSON 数组，或 `{ "endpoints": [] }` 作为内部扫描结果。
+`evt api sync` 会把这个扫描结果转换成 YAML。每个中间 endpoint 至少包含：
 
 ```json
 {
@@ -206,6 +237,9 @@ npm run sync:api -- --config-root /path/to/project/cli
 ```bash
 evt profile list
 evt api list
+evt api discover --config-root ./cli
+evt api sync --config-root ./cli
+evt api coverage --config-root ./cli
 evt api call todo.list --dry-run
 evt flow run login --profile local
 evt cache show

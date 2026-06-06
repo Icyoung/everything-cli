@@ -1,7 +1,9 @@
+const path = require("node:path");
+const { spawnSync } = require("node:child_process");
 const { parseArgs } = require("./util/args");
 const { parseJsonObject, stableJson } = require("./util/json");
 const { redact } = require("./util/redact");
-const { setConfigRoot } = require("./util/paths");
+const { cliRoot, setConfigRoot } = require("./util/paths");
 const {
   listApiFiles,
   listProfiles,
@@ -16,6 +18,8 @@ const { runFlow } = require("./flow/runner");
 const { toCurl } = require("./http/requestBuilder");
 const { compareScanToRegistry, scanServices } = require("./config/serviceScanner");
 const { runLiveApiTest } = require("./api/liveTester");
+const { runSyncApiCoverage } = require("../scripts/sync-api-coverage");
+const { runApiCoverage } = require("../scripts/check-api-coverage");
 
 function print(value, json = false) {
   if (json || typeof value !== "string") {
@@ -32,7 +36,10 @@ function usage() {
     "  evt profile show <name>",
     "  evt api list",
     "  evt api show <id>",
+    "  evt api discover [--config-root ./cli]",
     "  evt api scan [--missing] [--scan-config path/to/scanner.json]",
+    "  evt api sync [--config-root ./cli]",
+    "  evt api coverage [--config-root ./cli]",
     "  evt api call <id> [--profile local] [--set k=v] [--body '{...}'] [--dry-run]",
     "  evt api test-all [--profile local] [--include-dangerous] [--only namespace]",
     "  evt validate",
@@ -40,6 +47,17 @@ function usage() {
     "  evt flow run <name> [--profile local] [--set k=v] [--dry-run]",
     "  evt cache show|clear|path"
   ].join("\n");
+}
+
+function runNodeScript(relativeScript, args) {
+  const result = spawnSync(process.execPath, [path.join(cliRoot, relativeScript), ...args], {
+    cwd: process.cwd(),
+    stdio: "inherit",
+    shell: false
+  });
+  if (result.status !== 0) {
+    throw new Error(`${relativeScript} failed with exit code ${result.status || 1}`);
+  }
 }
 
 function commonRuntime(options) {
@@ -73,6 +91,25 @@ async function handleApi(tokens) {
   const sub = tokens[0];
   const options = parseArgs(tokens.slice(1));
   setConfigRoot(options.configRoot);
+
+  if (sub === "discover") {
+    const args = tokens.slice(1);
+    if (!options.configRoot && !args.includes("--config-root")) {
+      args.push("--config-root", "./cli");
+    }
+    runNodeScript("skills/evt-api-scanner/scripts/discover.js", args);
+    return;
+  }
+  if (sub === "sync") {
+    runSyncApiCoverage(tokens.slice(1));
+    return;
+  }
+  if (sub === "coverage") {
+    const result = runApiCoverage(tokens.slice(1));
+    if (result.failed) throw new Error("API coverage failed");
+    return;
+  }
+
   const registry = loadApiRegistry();
 
   if (sub === "list") {

@@ -3,18 +3,29 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { parseYaml } = require("../src/config/yaml");
-const { parseCliScanOptions, scanServices } = require("../src/config/serviceScanner");
-const { resolveCliPath, setConfigRoot } = require("../src/util/paths");
+const { loadScanConfig, parseCliScanOptions, scanServices } = require("../src/config/serviceScanner");
+const { resolveCliPath, resolveConfigDir, setConfigRoot } = require("../src/util/paths");
 
 const endpointKey = (endpoint) => `${String(endpoint.method || "GET").toUpperCase()}:${endpoint.path}`;
 
 function readApiDocument(namespace) {
-  const apiDir = resolveCliPath("apis");
+  const apiDir = resolveApiOutputDir();
   const file = path.join(apiDir, `${namespace}.yaml`);
   if (!fs.existsSync(file)) {
     return { namespace, endpoints: {} };
   }
   return parseYaml(fs.readFileSync(file, "utf8"));
+}
+
+function resolveApiOutputDir(scanOptions = {}) {
+  const scanConfig = loadScanConfig(scanOptions);
+  if (scanConfig.apiDir) return scanConfig.apiDir;
+  const legacyApiDir = resolveCliPath("apis");
+  const dataApiDir = resolveCliPath("data", "apis");
+  if (fs.existsSync(legacyApiDir)) return legacyApiDir;
+  if (fs.existsSync(dataApiDir)) return dataApiDir;
+  const resolved = resolveConfigDir("apis");
+  return fs.existsSync(resolved) ? resolved : dataApiDir;
 }
 
 function isPublicEndpoint(endpoint) {
@@ -43,7 +54,7 @@ function makeEndpoint(scanned) {
     path: scanned.path,
     auth: scanned.auth !== undefined ? scanned.auth : !isPublicEndpoint(scanned),
     schema: {},
-    response: {}
+    response: defaultResponse()
   };
 
   if (scanned.service) {
@@ -65,8 +76,18 @@ function augmentEndpoint(namespace, name, endpoint) {
     endpoint.dangerous = true;
   }
   endpoint.schema ||= {};
-  endpoint.response ||= {};
+  if (!endpoint.response || Object.keys(endpoint.response).length === 0) {
+    endpoint.response = defaultResponse();
+  }
   return endpoint;
+}
+
+function defaultResponse() {
+  return {
+    data: {
+      type: "object"
+    }
+  };
 }
 
 function uniqueName(endpoints, preferred) {
@@ -153,10 +174,10 @@ function serializeDocument(document) {
   return `${lines.join("\n").replace(/\n+$/, "")}\n`;
 }
 
-function main() {
-  const scanOptions = parseCliScanOptions(process.argv.slice(2));
+function runSyncApiCoverage(argv = process.argv.slice(2)) {
+  const scanOptions = parseCliScanOptions(argv);
   setConfigRoot(scanOptions.configRoot);
-  const apiDir = resolveCliPath("apis");
+  const apiDir = resolveApiOutputDir(scanOptions);
   fs.mkdirSync(apiDir, { recursive: true });
   const scanned = scanServices(scanOptions);
   const existingNamespaces = fs.existsSync(apiDir)
@@ -192,7 +213,15 @@ function main() {
     fs.writeFileSync(path.join(apiDir, `${namespace}.yaml`), serializeDocument(document));
   }
 
-  console.log(JSON.stringify({ scanned: scanned.length, added, namespaces: namespaces.length }, null, 2));
+  const payload = { scanned: scanned.length, added, namespaces: namespaces.length };
+  console.log(JSON.stringify(payload, null, 2));
+  return payload;
 }
 
-main();
+if (require.main === module) {
+  runSyncApiCoverage();
+}
+
+module.exports = {
+  runSyncApiCoverage
+};

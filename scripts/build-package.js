@@ -156,6 +156,7 @@ function main() {
   fs.chmodSync(executablePath, 0o755);
 
   copyDir(path.join(cliRoot, "data"), path.join(packageDir, "data"));
+  copyDir(path.join(cliRoot, "skills"), path.join(packageDir, "skills"));
   fs.copyFileSync(path.join(cliRoot, "README.md"), path.join(packageDir, "README.md"));
   fs.copyFileSync(path.join(cliRoot, "README.zh-CN.md"), path.join(packageDir, "README.zh-CN.md"));
 
@@ -165,7 +166,7 @@ function main() {
   console.log("\nLocal package artifacts:");
   console.log(`- dist/${packageName}/`);
   console.log(`- dist/${artifactName}`);
-  console.log("\nPackage contents are limited to evt, data examples, README.md, and README.zh-CN.md.");
+  console.log("\nPackage contents are limited to evt, data examples, skills, README.md, and README.zh-CN.md.");
   console.log("No npm publish or remote upload was performed.");
 }
 
