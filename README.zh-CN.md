@@ -1,26 +1,26 @@
 # evt-cli
 
-English | [简体中文](./README.zh-CN.md)
+简体中文 | [English](./README.md)
 
-evt-cli is a general-purpose HTTP CLI for running YAML-defined APIs and workflows. It uses YAML for endpoint and flow definitions, and JSON profiles for base URLs, headers, tokens, fixtures, and cache configuration. After installation, use the `evt` command.
+evt-cli 是一个通用 HTTP CLI，用 YAML 定义接口、用 YAML 定义 flow、用 profile 管理 base URL/header/token/cache。它适合把客户端接口整理成可执行、可测试、可打包的命令行工具。安装后使用 `evt` 命令。
 
-## Principles
+## 核心原则
 
-- Runtime endpoints come only from `apis/*.yaml`.
-- Flows come only from `flows/*.yaml`.
-- Environments, base URLs, headers, and test fixtures come only from `profiles/*.json`.
-- The scanner is only for coverage comparison and generating missing YAML skeletons. It is not a runtime data source.
-- The default data directory is bundled with the CLI package. You can also point to your own project data directory with `--config-root` or `EVT_CLI_ROOT`.
+- 运行时端点只来自 `apis/*.yaml`。
+- flow 只来自 `flows/*.yaml`。
+- 环境、base URL、headers、测试 fixtures 只来自 `profiles/*.json`。
+- 扫描器只用于覆盖率对比和生成缺失 YAML 骨架，不是运行时数据源。
+- 默认数据目录是当前 CLI 包内目录；也可以通过 `--config-root` 或 `EVT_CLI_ROOT` 指向项目自己的数据目录。
 
-## Quick Start
+## 快速开始
 
-Install:
+安装：
 
 ```bash
 npm install -g @icyouo/evt-cli
 ```
 
-Run the bundled example data:
+安装后直接运行自带 example 数据：
 
 ```bash
 evt profile list
@@ -29,7 +29,7 @@ evt validate
 evt api call todo.list --profile local --dry-run
 ```
 
-During local development, run the entry file directly:
+仓库内开发时也可以直接运行：
 
 ```bash
 node bin/evt.js profile list
@@ -38,7 +38,7 @@ node bin/evt.js validate
 node bin/evt.js api call todo.list --profile local --dry-run
 ```
 
-Use your own project data directory:
+使用项目自己的数据目录：
 
 ```bash
 evt validate --config-root /path/to/project/cli
@@ -46,16 +46,16 @@ evt api list --config-root /path/to/project/cli
 evt flow run login --config-root /path/to/project/cli --profile dev
 ```
 
-Or set an environment variable:
+也可以设置环境变量：
 
 ```bash
 export EVT_CLI_ROOT=/path/to/project/cli
 evt validate
 ```
 
-## Data Layout
+## 数据目录
 
-Recommended project data layout:
+项目数据目录结构：
 
 ```text
 cli/
@@ -73,17 +73,17 @@ cli/
     scanner.example.json
 ```
 
-evt-cli ships with `data/**/*.example.*` for validation and reference. Real projects can maintain `data/apis/*.yaml`, `data/flows/*.yaml`, `data/profiles/*.json`, and `data/scanner.json`.
+evt-cli 自带 `data/**/*.example.*`，用于开箱验证和复制参考。真实项目可以维护 `data/apis/*.yaml`、`data/flows/*.yaml`、`data/profiles/*.json` 和 `data/scanner.json`。
 
-For compatibility with existing projects, evt also reads `apis/`, `flows/`, `profiles/`, and `scanner.config.json` directly under `--config-root` when those paths exist.
+为了兼容已有项目，`--config-root` 下直接存在 `apis/`、`flows/`、`profiles/`、`scanner.config.json` 时也会被读取。
 
-## Local Check And Package
+## 本地校验和打包
 
 ```bash
 npm run ci:local
 ```
 
-This runs:
+执行内容：
 
 - `npm test`
 - `npm run check`
@@ -91,29 +91,29 @@ This runs:
 - `npm run coverage:api`
 - `node scripts/build-package.js`
 
-Local package artifacts:
+产物：
 
 - `dist/evt-cli/`
 - `dist/evt-cli-<version>-<platform>-<arch>.tar.gz`
 
-The local package directory contains only:
+打包目录只包含：
 
 - `evt`
 - `data/`
 - `README.md`
 - `README.zh-CN.md`
 
-It does not include `src/`, `scripts/`, `test/`, or `package.json`.
+不会包含 `src/`、`scripts/`、`test/`、`package.json`。
 
-## API Definitions
+## 接口定义
 
-Inspect an endpoint:
+查看接口：
 
 ```bash
 evt api show auth.login
 ```
 
-Example API YAML:
+接口 YAML 示例：
 
 ```yaml
 namespace: todo
@@ -135,7 +135,7 @@ endpoints:
         model: "TodoList"
 ```
 
-Each endpoint should include:
+每个 endpoint 应包含：
 
 - `method`
 - `path`
@@ -144,29 +144,29 @@ Each endpoint should include:
 - `service`
 - `schema`
 - `response`
-- `dangerous: true` when the endpoint is destructive or sensitive
+- 必要时标记 `dangerous: true`
 
-## Scan And Coverage
+## 扫描和覆盖率
 
-Scan source code for candidate endpoints:
+扫描源码候选 endpoint：
 
 ```bash
 evt api scan --scan-config ./scanner.config.json
 ```
 
-Check endpoint coverage:
+覆盖率检查：
 
 ```bash
 npm run coverage:api -- --config-root /path/to/project/cli
 ```
 
-Generate missing YAML skeletons:
+同步缺失 YAML 骨架：
 
 ```bash
 npm run sync:api -- --config-root /path/to/project/cli
 ```
 
-The scanner supports `kotlin`, `swift`, `js`, and `dart`. It also supports external skill or AST scanner commands:
+扫描器支持 `kotlin`、`swift`、`js`、`dart`，也支持外部 skill/AST 扫描命令：
 
 ```json
 {
@@ -187,7 +187,7 @@ The scanner supports `kotlin`, `swift`, `js`, and `dart`. It also supports exter
 }
 ```
 
-An external scanner can output a JSON array or `{ "endpoints": [] }`. Each endpoint should include at least:
+外部 scanner 输出 JSON 数组，或 `{ "endpoints": [] }`。每个 endpoint 至少包含：
 
 ```json
 {
@@ -199,9 +199,9 @@ An external scanner can output a JSON array or `{ "endpoints": [] }`. Each endpo
 }
 ```
 
-This JSON is used only for scanning, coverage, and sync. Runtime execution still reads YAML.
+这个 JSON 只参与扫描/覆盖率/sync，最终运行仍然读取 YAML。
 
-## Common Commands
+## 常用命令
 
 ```bash
 evt profile list
