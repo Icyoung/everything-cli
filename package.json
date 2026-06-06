@@ -1,7 +1,7 @@
 {
   "name": "evt-cli",
   "version": "0.1.0",
-  "description": "A configurable HTTP CLI for YAML-defined API workflows.",
+  "description": "Run YAML-defined HTTP APIs and interactive workflows from your terminal.",
   "license": "MIT",
   "repository": {
     "type": "git",
