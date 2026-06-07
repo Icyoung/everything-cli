@@ -1,6 +1,8 @@
 node_modules/
 dist/
 .cache/
+.evt/
+data/.evt/
 *.log
 .DS_Store
 **/.DS_Store
