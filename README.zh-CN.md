@@ -59,7 +59,7 @@ evt validate
 ```
 
 `evt profile set <name>` 会把默认 profile 写到当前 config root 下的
-`data/.evt/config.json`。需要 profile 的命令在未传 `--profile` 时会使用这个默认值。
+`.evt/config.json`。需要 profile 的命令在未传 `--profile` 时会使用这个默认值。
 临时传入 `--profile <name>` 仍然可以覆盖本次命令。
 
 ## 数据目录

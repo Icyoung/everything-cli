@@ -59,9 +59,9 @@ evt validate
 ```
 
 `evt profile set <name>` stores the default profile in
-`data/.evt/config.json` under the active config root. Commands that need a
-profile use that value when `--profile` is omitted. Passing `--profile <name>`
-still overrides the default for one command.
+`.evt/config.json` under the active config root. Commands that need a profile
+use that value when `--profile` is omitted. Passing `--profile <name>` still
+overrides the default for one command.
 
 ## Data Layout
 

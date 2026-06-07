@@ -3,13 +3,19 @@ const path = require("node:path");
 const { resolveCliPath } = require("./paths");
 
 function settingsPath() {
+  return resolveCliPath(".evt", "config.json");
+}
+
+function legacySettingsPath() {
   return resolveCliPath("data", ".evt", "config.json");
 }
 
 function readSettings() {
   const file = settingsPath();
-  if (!fs.existsSync(file)) return {};
-  return JSON.parse(fs.readFileSync(file, "utf8"));
+  const legacyFile = legacySettingsPath();
+  const readableFile = fs.existsSync(file) ? file : legacyFile;
+  if (!fs.existsSync(readableFile)) return {};
+  return JSON.parse(fs.readFileSync(readableFile, "utf8"));
 }
 
 function writeSettings(settings) {
@@ -38,6 +44,7 @@ function resolveProfileName(profile) {
 
 module.exports = {
   getDefaultProfile,
+  legacySettingsPath,
   readSettings,
   resolveProfileName,
   setDefaultProfile,
