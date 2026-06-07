@@ -38,6 +38,9 @@ function parseArgs(tokens) {
       "includeDangerous",
       "noLogin",
       "missing",
+      "strict",
+      "preferFallback",
+      "strictSkill",
       "help"
     ]);
 

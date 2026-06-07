@@ -10,7 +10,7 @@ evt-cli 是一个通用 HTTP CLI，用 YAML 定义接口、用 YAML 定义 flow�
 - flow 只来自 `flows/*.yaml`。
 - 环境、base URL、headers、测试 fixtures 只来自 `profiles/*.json`。
 - endpoint 定义持久化格式始终是 YAML。scanner JSON 只作为内部机器中间结果。
-- 内置 skill scanner 优先用于发现、生成 YAML 和覆盖率审计。现有正则 scanner 保留给没有 agent 或 skill workflow 的用户兜底。
+- 内置 skills 优先用于项目 data 初始化。现有正则 scanner 只保留给没有 agent 或 skill workflow 的用户做 endpoint 扫描兜底。
 - 默认数据目录是当前 CLI 包内目录；也可以通过 `--config-root` 或 `EVT_CLI_ROOT` 指向项目自己的数据目录。
 
 ## 快速开始
@@ -77,6 +77,18 @@ cli/
 evt-cli 自带 `data/**/*.example.*`，用于开箱验证和复制参考。真实项目可以维护 `data/apis/*.yaml`、`data/flows/*.yaml`、`data/profiles/*.json` 和 `data/scanner.json`。
 
 为了兼容已有项目，`--config-root` 下直接存在 `apis/`、`flows/`、`profiles/`、`scanner.config.json` 时也会被读取。
+
+## 用 Skills 初始化项目 Data
+
+evt-cli 自带通用 example data 和内置 skills。支持 skill 的 agent 可以把一个空的项目 data 目录生成成可运行的项目 data：
+
+1. 使用 `evt-profile-generator` 根据源码配置、文档、endpoint schema 和用户提供的测试账号生成 `data/profiles/<env>.json`。
+2. 使用 `evt-api-scanner` 发现 API 源码路径，写入 `data/scanner.json`，并生成 `data/apis/*.yaml`。
+3. 使用 `evt-flow-generator` 根据生成的 endpoint 和产品流程生成 `data/flows/login.yaml`、smoke flow 和 feature flow。
+4. 执行 `evt validate --config-root ./cli`。
+5. 先用 `--dry-run` 跑 flow，再在安全测试环境里跑真实请求。
+
+profile 和 flow 生成是 AI-first 任务，因为 base URL、headers、登录态、测试账号、token 返回路径和 feature 调用顺序都依赖具体项目语义。evt-cli 只保留 endpoint 扫描的代码兜底。
 
 ## 本地校验和打包
 
@@ -150,10 +162,16 @@ endpoints:
 - `response`
 - 必要时标记 `dangerous: true`
 
-## Skill 扫描、同步和覆盖率
+## Skills、扫描、同步和覆盖率
 
-evt-cli 内置 `skills/evt-api-scanner/SKILL.md`。agent 可以使用这个 skill
-发现源码目录、写入 scanner 配置、生成 YAML endpoint 定义，并做覆盖率审计。
+evt-cli 内置这些 skills：
+
+- `skills/evt-profile-generator/SKILL.md`
+- `skills/evt-api-scanner/SKILL.md`
+- `skills/evt-flow-generator/SKILL.md`
+
+agent 可以使用这些 skills 生成 profile JSON、发现源码目录、写入 scanner 配置、
+生成 YAML endpoint 定义、生成 flow YAML，并做覆盖率审计。
 
 endpoint 定义会写到 `data/apis/*.yaml`。scanner 可以在内部使用 JSON，但 JSON
 不是 endpoint 的最终定义格式。
@@ -168,6 +186,12 @@ evt api discover --config-root ./cli
 
 ```bash
 evt api sync --config-root ./cli
+```
+
+检查 YAML 质量门禁：
+
+```bash
+evt api audit --config-root ./cli --strict
 ```
 
 检查 YAML 覆盖率：
@@ -239,6 +263,7 @@ evt profile list
 evt api list
 evt api discover --config-root ./cli
 evt api sync --config-root ./cli
+evt api audit --config-root ./cli --strict
 evt api coverage --config-root ./cli
 evt api call todo.list --dry-run
 evt flow run login --profile local

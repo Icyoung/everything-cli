@@ -10,7 +10,7 @@ evt-cli is a general-purpose HTTP CLI for running YAML-defined APIs and workflow
 - Flows come only from `flows/*.yaml`.
 - Environments, base URLs, headers, and test fixtures come only from `profiles/*.json`.
 - Endpoint definitions are persisted as YAML. Scanner JSON is only an internal machine-readable handoff.
-- The bundled skill scanner is preferred for discovery and YAML generation. The built-in regex scanner remains as a fallback for users without an agent or skill workflow.
+- Bundled skills are preferred for project data bootstrap. The built-in regex scanner remains as an endpoint-only fallback for users without an agent or skill workflow.
 - The default data directory is bundled with the CLI package. You can also point to your own project data directory with `--config-root` or `EVT_CLI_ROOT`.
 
 ## Quick Start
@@ -77,6 +77,24 @@ cli/
 evt-cli ships with `data/**/*.example.*` for validation and reference. Real projects can maintain `data/apis/*.yaml`, `data/flows/*.yaml`, `data/profiles/*.json`, and `data/scanner.json`.
 
 For compatibility with existing projects, evt also reads `apis/`, `flows/`, `profiles/`, and `scanner.config.json` directly under `--config-root` when those paths exist.
+
+## Bootstrap Project Data With Skills
+
+evt-cli ships generic example data and bundled skills. A skill-aware agent can
+turn an empty project data directory into runnable project data:
+
+1. Use `evt-profile-generator` to create `data/profiles/<env>.json` from source
+   config, docs, endpoint schemas, and user-provided test credentials.
+2. Use `evt-api-scanner` to discover API source paths, write
+   `data/scanner.json`, and generate `data/apis/*.yaml`.
+3. Use `evt-flow-generator` to create `data/flows/login.yaml`, smoke flows, and
+   feature flows from the generated endpoints and product workflow.
+4. Run `evt validate --config-root ./cli`.
+5. Run flows with `--dry-run` first, then against a safe test environment.
+
+Profile and flow generation are AI-first tasks because base URLs, headers,
+login state, test accounts, token response paths, and feature sequences are
+project-specific. evt-cli keeps code fallback only for endpoint scanning.
 
 ## Local Check And Package
 
@@ -151,11 +169,17 @@ Each endpoint should include:
 - `response`
 - `dangerous: true` when the endpoint is destructive or sensitive
 
-## Skill Scan, Sync, And Coverage
+## Skills, Scan, Sync, And Coverage
 
-evt-cli includes `skills/evt-api-scanner/SKILL.md`. Agents can use this skill to
-discover source directories, write scanner config, generate YAML endpoint
-definitions, and audit coverage.
+evt-cli includes these bundled skills:
+
+- `skills/evt-profile-generator/SKILL.md`
+- `skills/evt-api-scanner/SKILL.md`
+- `skills/evt-flow-generator/SKILL.md`
+
+Agents can use these skills to create profile JSON, discover source
+directories, write scanner config, generate YAML endpoint definitions, create
+flow YAML, and audit coverage.
 
 Endpoint definitions are written to YAML under `data/apis/*.yaml`. The scanner
 may use JSON internally, but JSON is not the endpoint definition format.
@@ -170,6 +194,12 @@ Generate or update YAML endpoint definitions:
 
 ```bash
 evt api sync --config-root ./cli
+```
+
+Audit YAML quality after sync:
+
+```bash
+evt api audit --config-root ./cli --strict
 ```
 
 Check YAML coverage:
@@ -243,6 +273,7 @@ evt profile list
 evt api list
 evt api discover --config-root ./cli
 evt api sync --config-root ./cli
+evt api audit --config-root ./cli --strict
 evt api coverage --config-root ./cli
 evt api call todo.list --dry-run
 evt flow run login --profile local

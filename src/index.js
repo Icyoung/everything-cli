@@ -20,6 +20,7 @@ const { compareScanToRegistry, scanServices } = require("./config/serviceScanner
 const { runLiveApiTest } = require("./api/liveTester");
 const { runSyncApiCoverage } = require("../scripts/sync-api-coverage");
 const { runApiCoverage } = require("../scripts/check-api-coverage");
+const { runApiAudit } = require("../scripts/check-api-audit");
 
 function print(value, json = false) {
   if (json || typeof value !== "string") {
@@ -40,6 +41,7 @@ function usage() {
     "  evt api scan [--missing] [--scan-config path/to/scanner.json]",
     "  evt api sync [--config-root ./cli]",
     "  evt api coverage [--config-root ./cli]",
+    "  evt api audit [--config-root ./cli] [--strict]",
     "  evt api call <id> [--profile local] [--set k=v] [--body '{...}'] [--dry-run]",
     "  evt api test-all [--profile local] [--include-dangerous] [--only namespace]",
     "  evt validate",
@@ -107,6 +109,11 @@ async function handleApi(tokens) {
   if (sub === "coverage") {
     const result = runApiCoverage(tokens.slice(1));
     if (result.failed) throw new Error("API coverage failed");
+    return;
+  }
+  if (sub === "audit") {
+    const result = runApiAudit(tokens.slice(1));
+    if (result.failed) throw new Error("API audit failed");
     return;
   }
 
