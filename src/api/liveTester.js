@@ -4,7 +4,7 @@ const { buildRequest } = require("../http/requestBuilder");
 const { readCache } = require("../cache/sessionCache");
 const { loadFlow } = require("../config/loaders");
 const { runFlow } = require("../flow/runner");
-const { resolveCliPath } = require("../util/paths");
+const { defaultCacheDir } = require("../util/paths");
 const { redact } = require("../util/redact");
 
 function isPlainObject(value) {
@@ -16,7 +16,7 @@ function nowCompact() {
 }
 
 function ensureCacheDir() {
-  const dir = resolveCliPath(".cache");
+  const dir = defaultCacheDir();
   fs.mkdirSync(dir, { recursive: true });
   return dir;
 }

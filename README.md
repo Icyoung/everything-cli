@@ -63,6 +63,10 @@ evt validate
 use that value when `--profile` is omitted. Passing `--profile <name>` still
 overrides the default for one command.
 
+Runtime state is kept under `.evt/` in the active config root. Session cache and
+live-test reports are written to `.evt/cache/`. The older `.cache/session.local.json`
+path is still read as a compatibility fallback, but new writes use `.evt/cache/`.
+
 ## Data Layout
 
 Recommended project data layout:

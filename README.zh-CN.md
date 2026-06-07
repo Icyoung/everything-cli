@@ -62,6 +62,10 @@ evt validate
 `.evt/config.json`。需要 profile 的命令在未传 `--profile` 时会使用这个默认值。
 临时传入 `--profile <name>` 仍然可以覆盖本次命令。
 
+运行时状态统一放在当前 config root 下的 `.evt/`。登录 session cache 和真实接口测试
+报告会写到 `.evt/cache/`。旧的 `.cache/session.local.json` 仍会作为兼容 fallback 读取，
+但新的写入都会进入 `.evt/cache/`。
+
 ## 数据目录
 
 项目数据目录结构：

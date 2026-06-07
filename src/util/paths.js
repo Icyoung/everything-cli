@@ -25,13 +25,23 @@ function resolveConfigDir(name) {
 }
 
 function defaultCachePath() {
+  return resolveCliPath(".evt", "cache", "session.local.json");
+}
+
+function legacyCachePath() {
   return resolveCliPath(".cache", "session.local.json");
+}
+
+function defaultCacheDir() {
+  return resolveCliPath(".evt", "cache");
 }
 
 module.exports = {
   cliRoot,
   configRoot,
+  defaultCacheDir,
   defaultCachePath,
+  legacyCachePath,
   resolveCliPath,
   resolveConfigDir,
   setConfigRoot

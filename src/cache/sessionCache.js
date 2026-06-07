@@ -1,6 +1,6 @@
 const fs = require("node:fs");
 const path = require("node:path");
-const { defaultCachePath } = require("../util/paths");
+const { defaultCachePath, legacyCachePath } = require("../util/paths");
 
 function resolveCachePath(cachePath) {
   return cachePath ? path.resolve(cachePath) : defaultCachePath();
@@ -8,10 +8,12 @@ function resolveCachePath(cachePath) {
 
 function readCache(cachePath) {
   const file = resolveCachePath(cachePath);
-  if (!fs.existsSync(file)) {
+  const legacyFile = !cachePath ? legacyCachePath() : undefined;
+  const readableFile = fs.existsSync(file) ? file : legacyFile;
+  if (!readableFile || !fs.existsSync(readableFile)) {
     return {};
   }
-  return JSON.parse(fs.readFileSync(file, "utf8"));
+  return JSON.parse(fs.readFileSync(readableFile, "utf8"));
 }
 
 function writeCache(cachePath, value) {
