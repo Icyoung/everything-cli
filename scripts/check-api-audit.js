@@ -94,6 +94,23 @@ function looksDangerous(endpoint) {
     !/(login|check|send|verify|oauth)/.test(haystack);
 }
 
+function hasText(value) {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function schemaFieldEntries(endpoint) {
+  const schema = endpoint.schema || {};
+  return ["path", "query", "body"].flatMap((groupName) =>
+    Object.entries(schema[groupName] || {}).map(([name, definition]) => ({ groupName, name, definition }))
+  );
+}
+
+function hasMissingSchemaDescriptions(endpoint) {
+  return schemaFieldEntries(endpoint).some(({ definition }) =>
+    typeof definition === "string" || !hasText(definition.description)
+  );
+}
+
 function endpointList(registry) {
   return Object.values(registry).sort((left, right) => left.id.localeCompare(right.id));
 }
@@ -130,6 +147,8 @@ function summarize(registry, scanned) {
   const emptySchema = endpoints.filter((endpoint) => !hasMeaningfulSchema(endpoint));
   const missingResponse = endpoints.filter((endpoint) => !hasObjectEntries(endpoint.response));
   const genericResponse = endpoints.filter(isGenericResponse);
+  const missingDescription = endpoints.filter((endpoint) => !hasText(endpoint.description));
+  const missingParamDescription = endpoints.filter(hasMissingSchemaDescriptions);
   const unresolvedPath = endpoints.filter(hasUnresolvedPath);
   const unusablePath = endpoints.filter((endpoint) => !hasUsablePath(endpoint));
   const unmatchedService = endpoints.filter((endpoint) => endpoint.service && profiles.length > 0 && !services.has(endpoint.service));
@@ -151,6 +170,8 @@ function summarize(registry, scanned) {
     emptySchema: emptySchema.map((endpoint) => endpoint.id),
     missingResponse: missingResponse.map((endpoint) => endpoint.id),
     genericResponse: genericResponse.map((endpoint) => endpoint.id),
+    missingDescription: missingDescription.map((endpoint) => endpoint.id),
+    missingParamDescription: missingParamDescription.map((endpoint) => endpoint.id),
     unresolvedPath: unresolvedPath.map((endpoint) => endpoint.id),
     unusablePath: unusablePath.map((endpoint) => endpoint.id),
     unmatchedService: unmatchedService.map((endpoint) => `${endpoint.id}:${endpoint.service}`),
@@ -159,7 +180,9 @@ function summarize(registry, scanned) {
     dangerousSuspect: dangerousSuspect.map((endpoint) => endpoint.id),
     ratios: {
       emptySchema: ratio(emptySchema.length, endpoints.length),
-      genericResponse: ratio(genericResponse.length, endpoints.length)
+      genericResponse: ratio(genericResponse.length, endpoints.length),
+      missingDescription: ratio(missingDescription.length, endpoints.length),
+      missingParamDescription: ratio(missingParamDescription.length, endpoints.length)
     }
   };
 }
@@ -172,6 +195,8 @@ function evaluateStrict(summary, options) {
   const maxUnmatchedService = toNumber(options.maxUnmatchedService, 0);
   const maxUnusablePath = toNumber(options.maxUnusablePath, 0);
   const maxDuplicateMethodPath = toNumber(options.maxDuplicateMethodPath, 0);
+  const maxMissingDescriptionRatio = toNumber(options.maxMissingDescriptionRatio, 0.25);
+  const maxMissingParamDescriptionRatio = toNumber(options.maxMissingParamDescriptionRatio, 0.25);
   const failures = [];
 
   if (summary.missing.length > maxMissing) failures.push(`missing scan coverage ${summary.missing.length} > ${maxMissing}`);
@@ -180,6 +205,12 @@ function evaluateStrict(summary, options) {
   }
   if (summary.ratios.genericResponse > maxGenericResponseRatio) {
     failures.push(`generic response ratio ${summary.ratios.genericResponse.toFixed(3)} > ${maxGenericResponseRatio}`);
+  }
+  if (summary.ratios.missingDescription > maxMissingDescriptionRatio) {
+    failures.push(`missing description ratio ${summary.ratios.missingDescription.toFixed(3)} > ${maxMissingDescriptionRatio}`);
+  }
+  if (summary.ratios.missingParamDescription > maxMissingParamDescriptionRatio) {
+    failures.push(`missing param description ratio ${summary.ratios.missingParamDescription.toFixed(3)} > ${maxMissingParamDescriptionRatio}`);
   }
   if (summary.unresolvedPath.length > maxUnresolvedPath) failures.push(`unresolved paths ${summary.unresolvedPath.length} > ${maxUnresolvedPath}`);
   if (summary.unmatchedService.length > maxUnmatchedService) failures.push(`unmatched services ${summary.unmatchedService.length} > ${maxUnmatchedService}`);
@@ -203,6 +234,8 @@ function compact(summary) {
       emptySchema: summary.emptySchema.length,
       missingResponse: summary.missingResponse.length,
       genericResponse: summary.genericResponse.length,
+      missingDescription: summary.missingDescription.length,
+      missingParamDescription: summary.missingParamDescription.length,
       unresolvedPath: summary.unresolvedPath.length,
       unusablePath: summary.unusablePath.length,
       unmatchedService: summary.unmatchedService.length,
@@ -214,6 +247,8 @@ function compact(summary) {
     samples: {
       emptySchema: summary.emptySchema.slice(0, 25),
       genericResponse: summary.genericResponse.slice(0, 25),
+      missingDescription: summary.missingDescription.slice(0, 25),
+      missingParamDescription: summary.missingParamDescription.slice(0, 25),
       unresolvedPath: summary.unresolvedPath.slice(0, 25),
       unmatchedService: summary.unmatchedService.slice(0, 25),
       authSuspect: summary.authSuspect.slice(0, 25),

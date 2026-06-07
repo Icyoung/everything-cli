@@ -148,6 +148,7 @@ namespace: todo
 
 endpoints:
   list:
+    description: "分页查询待办事项列表。"
     method: "GET"
     path: "/api/todos"
     auth: true
@@ -156,6 +157,7 @@ endpoints:
         page:
           type: "integer"
           default: 1
+          description: "页码，从 1 开始。"
     response:
       envelope: "Resp"
       data:
@@ -165,6 +167,7 @@ endpoints:
 
 每个 endpoint 应包含：
 
+- `description`
 - `method`
 - `path`
 - `auth`
@@ -173,6 +176,10 @@ endpoints:
 - `schema`
 - `response`
 - 必要时标记 `dangerous: true`
+
+`schema.path`、`schema.query`、`schema.body` 里的每个参数也应包含
+`description`，说明参数语义、可选值，以及张数、基础币数量、计价币金额、
+价格等关键单位。
 
 ## Skills、扫描、同步和覆盖率
 

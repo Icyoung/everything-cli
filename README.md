@@ -156,6 +156,7 @@ namespace: todo
 
 endpoints:
   list:
+    description: "List todos with pagination."
     method: "GET"
     path: "/api/todos"
     auth: true
@@ -164,6 +165,7 @@ endpoints:
         page:
           type: "integer"
           default: 1
+          description: "Page number, starting from 1."
     response:
       envelope: "Resp"
       data:
@@ -173,6 +175,7 @@ endpoints:
 
 Each endpoint should include:
 
+- `description`
 - `method`
 - `path`
 - `auth`
@@ -181,6 +184,10 @@ Each endpoint should include:
 - `schema`
 - `response`
 - `dangerous: true` when the endpoint is destructive or sensitive
+
+Each `schema.path`, `schema.query`, and `schema.body` field should also include
+a `description` that explains the parameter semantics, accepted values, and
+important units such as contract count, base quantity, quote amount, or price.
 
 ## Skills, Scan, Sync, And Coverage
 

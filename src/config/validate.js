@@ -57,6 +57,9 @@ function validateApiDocument(api, file) {
     if (endpoint.body && !isObject(endpoint.body)) push(errors, file, `${label}.body must be an object`);
     if (endpoint.headers && !isObject(endpoint.headers)) push(errors, file, `${label}.headers must be an object`);
     if (endpoint.service && typeof endpoint.service !== "string") push(errors, file, `${label}.service must be a string`);
+    if (endpoint.description !== undefined && typeof endpoint.description !== "string") {
+      push(errors, file, `${label}.description must be a string`);
+    }
     if (endpoint.dangerous !== undefined && typeof endpoint.dangerous !== "boolean") {
       push(errors, file, `${label}.dangerous must be a boolean`);
     }
@@ -92,6 +95,9 @@ function validateSchemaGroup(group, file, label, errors) {
     }
     if (definition.from !== undefined && typeof definition.from !== "string") {
       push(errors, file, `${field}.from must be a string`);
+    }
+    if (definition.description !== undefined && typeof definition.description !== "string") {
+      push(errors, file, `${field}.description must be a string`);
     }
   }
 }

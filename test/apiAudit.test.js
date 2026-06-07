@@ -67,6 +67,7 @@ namespace: auth
 
 endpoints:
   login:
+    description: "Login and return a session token."
     method: "POST"
     path: "/api/login"
     auth: false
@@ -75,9 +76,11 @@ endpoints:
         email:
           type: "string"
           required: true
+          description: "User email address."
         password:
           type: "string"
           required: true
+          description: "User password."
     response:
       envelope: "Resp"
       data:
@@ -102,6 +105,7 @@ namespace: auth
 
 endpoints:
   login:
+    description: "Login and return a session token."
     method: "POST"
     path: "/api/login"
     auth: false
@@ -110,6 +114,7 @@ endpoints:
         email:
           type: "string"
           required: true
+          description: "User email address."
     response:
       envelope: "Resp"
       data:
