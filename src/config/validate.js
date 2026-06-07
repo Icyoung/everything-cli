@@ -143,6 +143,25 @@ function validateFlow(flow, file) {
       }
     }
   }
+  if (flow.inputGroups !== undefined) {
+    if (!isObject(flow.inputGroups)) {
+      push(errors, file, "flow.inputGroups must be an object");
+    } else if (flow.inputGroups.anyOf !== undefined) {
+      if (!Array.isArray(flow.inputGroups.anyOf)) {
+        push(errors, file, "flow.inputGroups.anyOf must be an array");
+      } else {
+        for (const [index, group] of flow.inputGroups.anyOf.entries()) {
+          if (!isObject(group)) {
+            push(errors, file, `inputGroups.anyOf[${index}] must be an object`);
+            continue;
+          }
+          if (!Array.isArray(group.fields) || group.fields.length === 0) {
+            push(errors, file, `inputGroups.anyOf[${index}].fields must be a non-empty array`);
+          }
+        }
+      }
+    }
+  }
   if (flow.steps !== undefined && !Array.isArray(flow.steps)) push(errors, file, "flow.steps must be an array");
   for (const [index, step] of (flow.steps || []).entries()) {
     if (!isObject(step)) {

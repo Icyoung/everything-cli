@@ -275,6 +275,42 @@ intermediate endpoint should include at least:
 
 This JSON is used only for scanning, coverage, and sync. Runtime execution still reads YAML.
 
+## Flow Inputs
+
+Flow inputs can prompt users interactively. Inputs with `type: "password"` are
+masked with `*` while typing.
+
+Use `inputGroups.anyOf` when one value from a set is required. For example,
+login flows can accept either an email verification code or a Google OTP:
+
+```yaml
+inputs:
+  email:
+    prompt: Email
+    type: string
+    required: true
+  password:
+    prompt: Password
+    type: password
+    required: true
+  code:
+    prompt: Email code
+    type: string
+    default: ""
+  googleCode:
+    prompt: Google OTP
+    type: string
+    default: ""
+
+inputGroups:
+  anyOf:
+    - fields:
+        - code
+        - googleCode
+      prompt: Enter either an email code or Google OTP.
+      message: email code or Google OTP
+```
+
 ## Common Commands
 
 ```bash

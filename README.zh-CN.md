@@ -264,6 +264,41 @@ npm run sync:api -- --config-root /path/to/project/cli
 
 这个 JSON 只参与扫描/覆盖率/sync，最终运行仍然读取 YAML。
 
+## Flow 输入
+
+flow inputs 支持交互式输入。`type: "password"` 的输入会在键入时显示为 `*`。
+
+当一组输入里必须至少提供一个值时，可以使用 `inputGroups.anyOf`。例如登录 flow
+可以支持邮箱验证码和 Google OTP 二选一：
+
+```yaml
+inputs:
+  email:
+    prompt: Email
+    type: string
+    required: true
+  password:
+    prompt: Password
+    type: password
+    required: true
+  code:
+    prompt: Email code
+    type: string
+    default: ""
+  googleCode:
+    prompt: Google OTP
+    type: string
+    default: ""
+
+inputGroups:
+  anyOf:
+    - fields:
+        - code
+        - googleCode
+      prompt: Enter either an email code or Google OTP.
+      message: email code or Google OTP
+```
+
 ## 常用命令
 
 ```bash

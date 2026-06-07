@@ -10,6 +10,24 @@ inputs:
     prompt: Password
     type: password
     required: true
+  code:
+    prompt: Email code
+    type: string
+    required: false
+    default: ""
+  googleCode:
+    prompt: Google OTP
+    type: string
+    required: false
+    default: ""
+
+inputGroups:
+  anyOf:
+    - fields:
+        - code
+        - googleCode
+      prompt: Enter either an email code or Google OTP.
+      message: email code or Google OTP
 
 steps:
   - id: login
@@ -17,6 +35,8 @@ steps:
     body:
       email: "{{inputs.email}}"
       password: "{{inputs.password}}"
+      code: "{{inputs.code}}"
+      googleCode: "{{inputs.googleCode}}"
 
 save:
   cache:

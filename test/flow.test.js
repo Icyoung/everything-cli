@@ -213,3 +213,89 @@ test("skips response expectations during dry-run", async () => {
   assert.equal(result.flow, "dry-run-expect");
   assert.deepEqual(result.vars, []);
 });
+
+test("accepts one input from an anyOf input group", async () => {
+  const result = await runFlow({
+    name: "login-any-of",
+    inputs: {
+      email: { required: true },
+      password: { required: true, type: "password" },
+      code: { default: "" },
+      googleCode: { default: "" }
+    },
+    inputGroups: {
+      anyOf: [
+        { fields: ["code", "googleCode"], message: "email code or Google OTP" }
+      ]
+    },
+    steps: [
+      {
+        id: "login",
+        call: "auth.login",
+        body: {
+          email: "{{inputs.email}}",
+          password: "{{inputs.password}}",
+          code: "{{inputs.code}}",
+          googleCode: "{{inputs.googleCode}}"
+        }
+      }
+    ]
+  }, {
+    registry: loadApiRegistry(),
+    profile: loadProfile("local"),
+    cache: {},
+    cachePath: "/tmp/evt-cli-any-of-cache-test.json",
+    set: {
+      email: "user@example.com",
+      password: "secret",
+      googleCode: "123456"
+    },
+    dryRun: true,
+    noInteractive: true
+  });
+
+  assert.deepEqual(result.inputs.sort(), ["code", "email", "googleCode", "password"].sort());
+  assert.equal(result.steps.login.request.body.code, "");
+  assert.equal(result.steps.login.request.body.googleCode, "123456");
+});
+
+test("fails when no input from an anyOf input group is available", async () => {
+  await assert.rejects(
+    runFlow({
+      name: "login-any-of-missing",
+      inputs: {
+        email: { required: true },
+        password: { required: true, type: "password" },
+        code: { default: "" },
+        googleCode: { default: "" }
+      },
+      inputGroups: {
+        anyOf: [
+          { fields: ["code", "googleCode"], message: "email code or Google OTP" }
+        ]
+      },
+      steps: [
+        {
+          id: "login",
+          call: "auth.login",
+          body: {
+            email: "{{inputs.email}}",
+            password: "{{inputs.password}}"
+          }
+        }
+      ]
+    }, {
+      registry: loadApiRegistry(),
+      profile: { name: "test", baseUrl: "https://api.example.com", inputs: {} },
+      cache: {},
+      cachePath: "/tmp/evt-cli-any-of-missing-cache-test.json",
+      set: {
+        email: "user@example.com",
+        password: "secret"
+      },
+      dryRun: true,
+      noInteractive: true
+    }),
+    /Missing required flow input group: email code or Google OTP/
+  );
+});
