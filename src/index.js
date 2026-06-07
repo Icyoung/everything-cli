@@ -4,6 +4,7 @@ const { parseArgs } = require("./util/args");
 const { parseJsonObject, stableJson } = require("./util/json");
 const { redact } = require("./util/redact");
 const { cliRoot, setConfigRoot } = require("./util/paths");
+const { getDefaultProfile, resolveProfileName, setDefaultProfile, settingsPath } = require("./util/settings");
 const {
   listApiFiles,
   listProfiles,
@@ -34,6 +35,8 @@ function usage() {
   return [
     "Usage:",
     "  evt profile list [--config-root ./cli]",
+    "  evt profile current [--config-root ./cli]",
+    "  evt profile set <name> [--config-root ./cli]",
     "  evt profile show <name>",
     "  evt api list",
     "  evt api show <id>",
@@ -42,11 +45,11 @@ function usage() {
     "  evt api sync [--config-root ./cli]",
     "  evt api coverage [--config-root ./cli]",
     "  evt api audit [--config-root ./cli] [--strict]",
-    "  evt api call <id> [--profile local] [--set k=v] [--body '{...}'] [--dry-run]",
-    "  evt api test-all [--profile local] [--include-dangerous] [--only namespace]",
+    "  evt api call <id> [--profile name] [--set k=v] [--body '{...}'] [--dry-run]",
+    "  evt api test-all [--profile name] [--include-dangerous] [--only namespace]",
     "  evt validate",
     "  evt flow list",
-    "  evt flow run <name> [--profile local] [--set k=v] [--dry-run]",
+    "  evt flow run <name> [--profile name] [--set k=v] [--dry-run]",
     "  evt cache show|clear|path"
   ].join("\n");
 }
@@ -63,7 +66,7 @@ function runNodeScript(relativeScript, args) {
 }
 
 function commonRuntime(options) {
-  const profile = loadProfile(options.profile || "local");
+  const profile = loadProfile(resolveProfileName(options.profile));
   const cachePath = resolveCachePath(options.cache);
   const cache = readCache(cachePath);
   return {
@@ -82,8 +85,25 @@ async function handleProfile(tokens) {
     print(listProfiles(), options.json);
     return;
   }
+  if (sub === "current") {
+    const profile = getDefaultProfile();
+    if (options.json) {
+      print({ profile, settingsPath: settingsPath() }, true);
+    } else {
+      print(profile);
+    }
+    return;
+  }
+  if (sub === "set") {
+    const name = options._[0];
+    if (!name) throw new Error("evt profile set expects a profile name");
+    loadProfile(name);
+    const result = setDefaultProfile(name);
+    print(options.json ? { ok: true, ...result } : `Default profile set to ${name}`);
+    return;
+  }
   if (sub === "show") {
-    print(loadProfile(options._[0]), true);
+    print(loadProfile(resolveProfileName(options._[0])), true);
     return;
   }
   throw new Error(usage());

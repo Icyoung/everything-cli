@@ -25,18 +25,21 @@ npm install -g @icyouo/evt-cli
 
 ```bash
 evt profile list
+evt profile set local
+evt profile current
 evt api list
 evt validate
-evt api call todo.list --profile local --dry-run
+evt api call todo.list --dry-run
 ```
 
 仓库内开发时也可以直接运行：
 
 ```bash
 node bin/evt.js profile list
+node bin/evt.js profile set local
 node bin/evt.js api list
 node bin/evt.js validate
-node bin/evt.js api call todo.list --profile local --dry-run
+node bin/evt.js api call todo.list --dry-run
 ```
 
 使用项目自己的数据目录：
@@ -44,7 +47,8 @@ node bin/evt.js api call todo.list --profile local --dry-run
 ```bash
 evt validate --config-root /path/to/project/cli
 evt api list --config-root /path/to/project/cli
-evt flow run login --config-root /path/to/project/cli --profile dev
+evt profile set dev --config-root /path/to/project/cli
+evt flow run login --config-root /path/to/project/cli
 ```
 
 也可以设置环境变量：
@@ -53,6 +57,10 @@ evt flow run login --config-root /path/to/project/cli --profile dev
 export EVT_CLI_ROOT=/path/to/project/cli
 evt validate
 ```
+
+`evt profile set <name>` 会把默认 profile 写到当前 config root 下的
+`data/.evt/config.json`。需要 profile 的命令在未传 `--profile` 时会使用这个默认值。
+临时传入 `--profile <name>` 仍然可以覆盖本次命令。
 
 ## 数据目录
 
@@ -260,14 +268,16 @@ npm run sync:api -- --config-root /path/to/project/cli
 
 ```bash
 evt profile list
+evt profile set local
+evt profile current
 evt api list
 evt api discover --config-root ./cli
 evt api sync --config-root ./cli
 evt api audit --config-root ./cli --strict
 evt api coverage --config-root ./cli
 evt api call todo.list --dry-run
-evt flow run login --profile local
+evt flow run login
 evt cache show
 evt cache clear
-evt api test-all --profile local
+evt api test-all
 ```

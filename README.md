@@ -25,18 +25,21 @@ Run the bundled example data:
 
 ```bash
 evt profile list
+evt profile set local
+evt profile current
 evt api list
 evt validate
-evt api call todo.list --profile local --dry-run
+evt api call todo.list --dry-run
 ```
 
 During local development, run the entry file directly:
 
 ```bash
 node bin/evt.js profile list
+node bin/evt.js profile set local
 node bin/evt.js api list
 node bin/evt.js validate
-node bin/evt.js api call todo.list --profile local --dry-run
+node bin/evt.js api call todo.list --dry-run
 ```
 
 Use your own project data directory:
@@ -44,7 +47,8 @@ Use your own project data directory:
 ```bash
 evt validate --config-root /path/to/project/cli
 evt api list --config-root /path/to/project/cli
-evt flow run login --config-root /path/to/project/cli --profile dev
+evt profile set dev --config-root /path/to/project/cli
+evt flow run login --config-root /path/to/project/cli
 ```
 
 Or set an environment variable:
@@ -53,6 +57,11 @@ Or set an environment variable:
 export EVT_CLI_ROOT=/path/to/project/cli
 evt validate
 ```
+
+`evt profile set <name>` stores the default profile in
+`data/.evt/config.json` under the active config root. Commands that need a
+profile use that value when `--profile` is omitted. Passing `--profile <name>`
+still overrides the default for one command.
 
 ## Data Layout
 
@@ -270,14 +279,16 @@ This JSON is used only for scanning, coverage, and sync. Runtime execution still
 
 ```bash
 evt profile list
+evt profile set local
+evt profile current
 evt api list
 evt api discover --config-root ./cli
 evt api sync --config-root ./cli
 evt api audit --config-root ./cli --strict
 evt api coverage --config-root ./cli
 evt api call todo.list --dry-run
-evt flow run login --profile local
+evt flow run login
 evt cache show
 evt cache clear
-evt api test-all --profile local
+evt api test-all
 ```
