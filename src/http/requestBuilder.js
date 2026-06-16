@@ -56,6 +56,14 @@ function encodeBody(bodyType, body, options = {}) {
     const form = new FormData();
     for (const [key, value] of Object.entries(body)) {
       if (value === undefined || value === null) continue;
+      if (isMultipartFilePart(value)) {
+        const filePath = String(value.filePath || value.path);
+        const file = fs.readFileSync(filePath);
+        const contentType = value.contentType || "application/octet-stream";
+        const filename = value.filename || path.basename(filePath);
+        form.append(key, new Blob([file], { type: contentType }), filename);
+        continue;
+      }
       if (key === "file" || key === "filePath") {
         const filePath = String(value);
         const file = fs.readFileSync(filePath);
@@ -79,6 +87,15 @@ function encodeBody(bodyType, body, options = {}) {
     return typeof body === "string" ? body : JSON.stringify(body);
   }
   throw new Error(`Unsupported bodyType: ${bodyType}`);
+}
+
+function isMultipartFilePart(value) {
+  return Boolean(
+    value &&
+    typeof value === "object" &&
+    !Array.isArray(value) &&
+    (value.filePath || value.path)
+  );
 }
 
 function contentTypeFor(bodyType) {
@@ -180,6 +197,12 @@ function addMultipartCurlParts(parts, request) {
   const safeBody = redact(request.body || {});
   for (const [key, value] of Object.entries(safeBody)) {
     if (value === undefined || value === null) continue;
+    if (isMultipartFilePart(value)) {
+      const filename = value.filename ? `;filename=${value.filename}` : "";
+      const contentType = value.contentType ? `;type=${value.contentType}` : "";
+      parts.push("-F", JSON.stringify(`${key}=@${value.filePath || value.path}${filename}${contentType}`));
+      continue;
+    }
     if (key === "file" || key === "filePath") {
       parts.push("-F", JSON.stringify(`file=@${value}`));
       continue;
